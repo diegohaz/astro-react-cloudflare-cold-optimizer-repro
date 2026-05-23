@@ -2,7 +2,7 @@
 
 Minimal reproduction for a dev-only cold-cache warning with Astro, React, and the Cloudflare adapter.
 
-On the first request after deleting Vite's optimizer cache, Astro/Vite discovers `astro/virtual-modules/transitions.js`, reloads the program, and React logs invalid hook warnings while rendering an ordinary server-side React component. A second request against the same dev server is clean.
+On the first request after deleting Vite's optimizer cache, Astro/Vite discovers `astro/virtual-modules/transitions.js`, reloads the program, and React incorrectly logs invalid hook warnings while rendering an ordinary server-side React component. A second request against the same dev server is clean.
 
 The minimum moving parts are:
 
@@ -32,7 +32,7 @@ In another terminal, request the page:
 curl -i http://localhost:4321/
 ```
 
-Expected behavior on the first request:
+Current buggy output on the first request:
 
 - the response is `200`
 - the dev server prints `new dependencies optimized: astro/virtual-modules/transitions.js`
@@ -56,7 +56,7 @@ Inspect the optimized SSR dependency metadata:
 node -e 'const m = require("./node_modules/.vite/deps_ssr/_metadata.json"); console.log(Object.keys(m.optimized).filter((key) => /react|transitions|cloudflare/.test(key)).join("\n"))'
 ```
 
-Expected relevant entries:
+Relevant entries should include:
 
 ```txt
 @astrojs/cloudflare/image-service-workerd
@@ -75,14 +75,14 @@ Request the page again without restarting the server:
 curl -i http://localhost:4321/
 ```
 
-Expected behavior on the second request:
+Current warm-cache output on the second request:
 
 - the response contains `Server rendered React hook count: 1`
 - no new `Invalid hook call` warning is printed
 
 ## Automated Reproduction
 
-The Playwright test starts `astro dev`, deletes `node_modules/.vite`, makes a cold request, asserts that the invalid hook warning appears, then makes a warm request and asserts that the warning count does not increase.
+The Playwright test starts `astro dev`, deletes `node_modules/.vite`, makes a cold request, waits for the cold optimizer reload, and asserts that React invalid hook warnings are not printed. This test fails while the bug is present.
 
 ```sh
 pnpm test
@@ -90,7 +90,7 @@ pnpm test
 
 The test also asserts that `react` resolves to the same package from the app and from `react-dom`, and that `node_modules/.vite/deps_ssr/_metadata.json` contains `astro/virtual-modules/transitions.js`. It uses a random local port, so it can run even if `localhost:4321` is already in use.
 
-The GitHub Actions workflow runs the same test on every push and pull request. The test prints the captured `astro dev` output, so the `Invalid hook call` warning and `useContext` stack trace are visible in the CI logs.
+The GitHub Actions workflow runs the same failing repro test on every push and pull request. The test prints the captured `astro dev` output, so the `Invalid hook call` warning and `useContext` stack trace are visible in the CI logs.
 
 ## Notes
 

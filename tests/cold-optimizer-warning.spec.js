@@ -28,7 +28,7 @@ async function waitForLog(logs, pattern, timeout = 30_000) {
   throw new Error(`Timed out waiting for ${pattern}.\n\nLogs:\n${logs.text}`);
 }
 
-test("cold SSR optimizer reload emits React invalid hook warning once", async ({
+test("cold SSR optimizer reload should not emit React invalid hook warnings", async ({
   request,
 }) => {
   await rm("node_modules/.vite", { recursive: true, force: true });
@@ -70,8 +70,11 @@ test("cold SSR optimizer reload emits React invalid hook warning once", async ({
     const coldBody = await coldResponse.text();
     expect(coldResponse.status()).toBe(200);
 
-    await waitForLog(logs, /Invalid hook call/);
-    await waitForLog(logs, /new dependencies optimized/);
+    await waitForLog(
+      logs,
+      /new dependencies optimized: astro\/virtual-modules\/transitions\.js/,
+    );
+    await waitForLog(logs, /optimized dependencies changed/);
 
     const metadataText = await readFile(
       "node_modules/.vite/deps_ssr/_metadata.json",
@@ -86,9 +89,6 @@ test("cold SSR optimizer reload emits React invalid hook warning once", async ({
       metadata.optimized["astro/virtual-modules/transitions.js"],
     ).toBeTruthy();
 
-    const warningsAfterCold = logs.text.match(/Invalid hook call/g)?.length ?? 0;
-    expect(warningsAfterCold).toBeGreaterThan(0);
-
     const warmResponse = await request.get(`http://127.0.0.1:${port}/`);
     const warmBody = await warmResponse.text();
     expect(warmResponse.status()).toBe(200);
@@ -96,8 +96,6 @@ test("cold SSR optimizer reload emits React invalid hook warning once", async ({
     expect(warmBody).toContain(">1</p>");
 
     await new Promise((resolve) => setTimeout(resolve, 1_000));
-    const warningsAfterWarm = logs.text.match(/Invalid hook call/g)?.length ?? 0;
-    expect(warningsAfterWarm).toBe(warningsAfterCold);
 
     test.info().annotations.push({
       type: "cold response bytes",
@@ -121,6 +119,10 @@ test("cold SSR optimizer reload emits React invalid hook warning once", async ({
       contentType: "application/json",
     });
     console.log(logs.text);
+    expect(logs.text).not.toContain("Invalid hook call");
+    expect(logs.text).not.toContain(
+      "Cannot read properties of null (reading 'useContext')",
+    );
   } finally {
     await test.info().attach("astro-dev.log", {
       body: logs.text,
