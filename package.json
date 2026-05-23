@@ -1,0 +1,23 @@
+{
+  "name": "astro-react-cloudflare-cold-optimizer-repro",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "13.5.4",
+    "@astrojs/react": "5.0.5",
+    "astro": "6.3.7",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@11.1.3"
+}
