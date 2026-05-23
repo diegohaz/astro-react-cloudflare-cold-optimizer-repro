@@ -101,4 +101,4 @@ The React component is intentionally ordinary:
 - `useId`
 - `useState`
 
-There is no Ariakit, MDX, custom renderer, linked package, or non-standard hook pattern in this reproduction.
+There is no MDX, custom renderer, linked package, or non-standard hook pattern in this reproduction.
