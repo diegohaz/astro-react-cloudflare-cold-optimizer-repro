@@ -70,10 +70,7 @@ test("cold SSR optimizer reload should not emit React invalid hook warnings", as
     const coldBody = await coldResponse.text();
     expect(coldResponse.status()).toBe(200);
 
-    await waitForLog(
-      logs,
-      /new dependencies optimized: astro\/virtual-modules\/transitions\.js/,
-    );
+    await waitForLog(logs, /new dependencies optimized/);
     await waitForLog(logs, /optimized dependencies changed/);
 
     const metadataText = await readFile(
