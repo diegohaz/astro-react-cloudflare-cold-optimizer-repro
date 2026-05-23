@@ -90,6 +90,8 @@ pnpm test
 
 The test also asserts that `react` resolves to the same package from the app and from `react-dom`, and that `node_modules/.vite/deps_ssr/_metadata.json` contains `astro/virtual-modules/transitions.js`. It uses a random local port, so it can run even if `localhost:4321` is already in use.
 
+The GitHub Actions workflow runs the same test on every push and pull request. The test prints the captured `astro dev` output, so the `Invalid hook call` warning and `useContext` stack trace are visible in the CI logs.
+
 ## Notes
 
 The React component is intentionally ordinary:

@@ -120,6 +120,7 @@ test("cold SSR optimizer reload emits React invalid hook warning once", async ({
       ),
       contentType: "application/json",
     });
+    console.log(logs.text);
   } finally {
     await test.info().attach("astro-dev.log", {
       body: logs.text,
