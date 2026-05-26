@@ -11,7 +11,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "13.5.4",
     "@astrojs/react": "5.0.5",
-    "astro": "6.3.7",
+    "astro": "https://pkg.pr.new/astro@16770",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
